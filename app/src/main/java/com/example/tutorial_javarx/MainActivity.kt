@@ -15,7 +15,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var btn: Button
     lateinit var counterBtn: TextView
     lateinit var counterLog: TextView
-    lateinit var dispose: Disposable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,8 +28,8 @@ class MainActivity : AppCompatActivity() {
             counterBtn.text = count.toString()
         }
 
-        dispose = dataSource()
-            .subscribeOn(Schedulers.computation())
+        initObservable()
+            .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 {
@@ -44,16 +43,10 @@ class MainActivity : AppCompatActivity() {
                 })
     }
 
-    fun dataSource(): Observable<Int> = Observable.create { subscriber ->
+    private fun initObservable(): Observable<Int> = Observable.create { subscriber ->
         for (i in 0..100) {
             Thread.sleep(1000)
             subscriber.onNext(i)
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        dispose.dispose()
-    }
-
 }
